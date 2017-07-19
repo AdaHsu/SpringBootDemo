@@ -1,0 +1,4 @@
+FROM java:alpine
+COPY target/SpringBootDemo-gcp.jar /var/opt/Server.jar
+WORKDIR /var/opt
+CMD [ "java", "-jar", "/var/opt/Server.jar"]
