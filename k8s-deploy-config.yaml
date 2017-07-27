@@ -1,0 +1,39 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: springboot
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: springboot
+    spec:
+      containers:
+      - name: springboot
+        image: gcr.io/springboot-demo/spring-boot-demo:1
+        ports:
+        - containerPort: 8080
+      - image: gcr.io/cloudsql-docker/gce-proxy:1.09
+        name: cloudsql-proxy
+        command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                  "-instances=springboot-demo:asia-east1:demo=tcp:3306",
+                  "-credential_file=/secrets/cloudsql/credentials.json"]
+        volumeMounts:
+        - name: cloudsql-instance-credentials
+          mountPath: /secrets/cloudsql
+          readOnly: true
+        - name: ssl-certs
+          mountPath: /etc/ssl/certs
+        - name: cloudsql
+          mountPath: /cloudsql
+
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs
+        - name: cloudsql
+          emptyDir:
